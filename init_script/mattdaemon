@@ -1,0 +1,75 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          mattdaemon
+# Short-Description: Matt the Daemon
+# Description:       Backup Script
+### END INIT INFO
+
+# Author: Bryan Flood <bryanfloodcontact@gmail.com>
+# Based on Debians /etc/init.d/skeleton and Auditds init.d/auditd.init
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="matt daemon"
+NAME=mattdaemon
+DAEMON=/user/sbin/"$NAME"
+PIDFILE=/var/run/"$NAME".pid
+SCRIPTNAME=/etc/init.d/skeleton/"$NAME"
+LOCKFILE=/var/lock/subsys/"$NAME"
+RETVAL=0
+
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/"$NAME" ] && . /etc/default/"$NAME"
+
+# Define LSB log_* functions.
+. /lib/lsb/init-functions
+
+#
+# Function that starts the daemon/service
+#
+
+start() {
+	echo -n $"Starting $NAME: "
+	daemon --pidfile=${PIDFILE} $DAEMON start
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && touch ${LOCKFILE}
+	return $RETVAL
+}
+
+
+stop() {
+	echo -n $"Stopping $NAME: "
+	killproc -p ${PIDFILE} -d 10 $DAEMON
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f ${LOCKFILE} ${PIDFILE}
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  backup)
+    $DAEMON backup
+	;;
+  transfer)
+    $DAEMON transfer
+	;;
+  btransfer)
+    $DAEMON btransfer
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|backup|transfer|btransfer}"
+	exit 1
+esac
+
+exit $RETVAL
